@@ -1,37 +1,116 @@
 package main
 
 import (
-	"fmt"
-	"io/ioutil"
+	"github.com/gin-gonic/gin"
+	"github.com/jinzhu/gorm"
+	_ "github.com/jinzhu/gorm/dialects/mysql"
 	"log"
-	"net/http"
-	"os"
 )
 
+type Product struct {
+	ID          int    `db:"id"`
+	Name        string `db:"name"`
+	URL         string `db:"url"`
+	Cost        string `db:"cost"`
+	Category    string `db:"category"`
+	Description string `db:"description"`
+}
+
 func main() {
-	http.HandleFunc("/", handler)
-	log.Println("Запускаемся. Слушаем порт 80")
-	_ = http.ListenAndServe(":80", nil)
+	db, err := gorm.Open("mysql", "root:qwe123@/shop")
+	if err != nil {
+		log.Println("Connection Failed to Open", err)
+	}
+	defer db.Close()
+	db.AutoMigrate(Product{})
+	router := gin.Default()
+	router.GET("/allproducts", handlerProductsAll)
+	router.GET("/products/:category", handlerProductsGroup)
+	router.GET("/product/:id", handlerProductId)
+	router.OPTIONS("/addproduct", handlerOption)
+	router.POST("/addproduct", handlerProductAdd)
+	router.OPTIONS("/delproduct/:id", handlerOption)
+	router.DELETE("/delproduct/:id", handlerProductDel)
+	router.POST("/upload", handlerProductUpload)
+	router.OPTIONS("/upload", handlerOption)
+	_ = router.Run()
 }
 
-func handler(iWrt http.ResponseWriter, iReq *http.Request) {
-	var lGet = iReq.URL.Path[1:]
-	log.Println(iReq)
-	if lGet == "" || lGet == "/" {
-		lGet = "index.html"
-	}
-	lData := " products: [{id: 5, url: './img/IMG_2.jpg', cost: '100', category: 'Бр11оши'},{id: 6, url: './img/IMG_2.jpg', cost: '100', category: 'Бр11оши'},{id: 7, url: './img/IMG_2.jpg', cost: '100', category: 'Бр11оши'}]"
-	iWrt.Header().Set("Access-Control-Allow-Origin", "*")
-	_, _ = fmt.Fprintln(iWrt, lData)
+func handlerOption(c *gin.Context) {
+	c.Header("Access-Control-Allow-Origin", "*")
+	c.Header("Access-Control-Allow-Headers", "*")
+	c.Header("Access-Control-Allow-Methods", "*")
+	c.JSON(200, "accept")
 }
 
-func readFile(iFileName string) string {
-	lData, err := ioutil.ReadFile(iFileName)
-	var lOut string
-	if !os.IsNotExist(err) {
-		lOut = string(lData)
-	} else {
-		lOut = "404"
+func handlerProductsAll(c *gin.Context) {
+	db, err := gorm.Open("mysql", "root:qwe123@/shop")
+	if err != nil {
+		log.Println("Connection Failed to Open", err)
 	}
-	return lOut
+	defer db.Close()
+	log.Println("Connection Established")
+	var products []Product
+	db.Find(&products)
+	c.Header("Access-Control-Allow-Origin", "*")
+	c.JSON(200, products)
+}
+
+func handlerProductsGroup(c *gin.Context) {
+	db, err := gorm.Open("mysql", "root:qwe123@/shop")
+	if err != nil {
+		log.Println("Connection Failed to Open", err)
+	}
+	defer db.Close()
+	log.Println("Connection Established")
+	var products []Product
+	db.Where("category = ?", c.Param("category")).Find(&products)
+	c.Header("Access-Control-Allow-Origin", "*")
+	c.JSON(200, products)
+}
+
+func handlerProductId(c *gin.Context) {
+	db, err := gorm.Open("mysql", "root:qwe123@/shop")
+	if err != nil {
+		log.Println("Connection Failed to Open", err)
+	}
+	defer db.Close()
+	log.Println("Connection Established")
+	var products []Product
+	db.Where("id = ?", c.Param("id")).First(&products)
+	c.Header("Access-Control-Allow-Origin", "*")
+	c.JSON(200, products)
+}
+
+func handlerProductAdd(c *gin.Context) {
+	db, err := gorm.Open("mysql", "root:qwe123@/shop")
+	if err != nil {
+		log.Println("Connection Failed to Open", err)
+	}
+	defer db.Close()
+	log.Println("Connection Established2")
+	var products Product
+	_ = c.ShouldBindJSON(&products)
+	log.Println(products)
+	db.Create(&products)
+	c.Header("Access-Control-Allow-Origin", "*")
+	c.JSON(200, "accept")
+}
+
+func handlerProductDel(c *gin.Context) {
+	db, err := gorm.Open("mysql", "root:qwe123@/shop")
+	if err != nil {
+		log.Println("Connection Failed to Open", err)
+	}
+	defer db.Close()
+	log.Println(c.Param("id"))
+	db.Where("id = ?", c.Param("id")).Delete(Product{})
+	c.Header("Access-Control-Allow-Origin", "*")
+	c.String(200, "accept")
+}
+
+func handlerProductUpload(c *gin.Context) {
+	log.Println(c.FormFile("file"))
+	c.Header("Access-Control-Allow-Origin", "*")
+	c.String(200, "accept")
 }
