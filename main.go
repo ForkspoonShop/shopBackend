@@ -17,7 +17,7 @@ type Product struct {
 }
 
 func main() {
-	db, err := gorm.Open("mysql", "root:qwe123@/shop")
+	db, err := gorm.Open("mysql", "root:qwe123@/shop?charset=utf8&")
 	if err != nil {
 		log.Println("Connection Failed to Open", err)
 	}
@@ -44,7 +44,7 @@ func handlerOption(c *gin.Context) {
 }
 
 func handlerProductsAll(c *gin.Context) {
-	db, err := gorm.Open("mysql", "root:qwe123@/shop")
+	db, err := gorm.Open("mysql", "root:qwe123@/shop?charset=utf8&")
 	if err != nil {
 		log.Println("Connection Failed to Open", err)
 	}
@@ -57,7 +57,7 @@ func handlerProductsAll(c *gin.Context) {
 }
 
 func handlerProductsGroup(c *gin.Context) {
-	db, err := gorm.Open("mysql", "root:qwe123@/shop")
+	db, err := gorm.Open("mysql", "root:qwe123@/shop?charset=utf8&")
 	if err != nil {
 		log.Println("Connection Failed to Open", err)
 	}
@@ -70,7 +70,7 @@ func handlerProductsGroup(c *gin.Context) {
 }
 
 func handlerProductId(c *gin.Context) {
-	db, err := gorm.Open("mysql", "root:qwe123@/shop")
+	db, err := gorm.Open("mysql", "root:qwe123@/shop?charset=utf8&")
 	if err != nil {
 		log.Println("Connection Failed to Open", err)
 	}
@@ -83,7 +83,7 @@ func handlerProductId(c *gin.Context) {
 }
 
 func handlerProductAdd(c *gin.Context) {
-	db, err := gorm.Open("mysql", "root:qwe123@/shop")
+	db, err := gorm.Open("mysql", "root:qwe123@/shop?charset=utf8&")
 	if err != nil {
 		log.Println("Connection Failed to Open", err)
 	}
@@ -98,7 +98,7 @@ func handlerProductAdd(c *gin.Context) {
 }
 
 func handlerProductDel(c *gin.Context) {
-	db, err := gorm.Open("mysql", "root:qwe123@/shop")
+	db, err := gorm.Open("mysql", "root:qwe123@/shop?charset=utf8&")
 	if err != nil {
 		log.Println("Connection Failed to Open", err)
 	}
