@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/mysql"
@@ -27,11 +28,13 @@ func main() {
 	router.GET("/allproducts", handlerProductsAll)
 	router.GET("/products/:category", handlerProductsGroup)
 	router.GET("/product/:id", handlerProductId)
-	router.OPTIONS("/addproduct", handlerOption)
 	router.POST("/addproduct", handlerProductAdd)
-	router.OPTIONS("/delproduct/:id", handlerOption)
+	router.POST("/updateproduct/:id", handlerProductUpdate)
 	router.DELETE("/delproduct/:id", handlerProductDel)
-	router.POST("/upload", handlerProductUpload)
+	router.POST("/upload", handlerImageUpload)
+	router.OPTIONS("/addproduct", handlerOption)
+	router.OPTIONS("/delproduct/:id", handlerOption)
+	router.OPTIONS("/updateproduct/:id", handlerOption)
 	router.OPTIONS("/upload", handlerOption)
 	_ = router.Run()
 }
@@ -49,7 +52,6 @@ func handlerProductsAll(c *gin.Context) {
 		log.Println("Connection Failed to Open", err)
 	}
 	defer db.Close()
-	log.Println("Connection Established")
 	var products []Product
 	db.Find(&products)
 	c.Header("Access-Control-Allow-Origin", "*")
@@ -62,7 +64,6 @@ func handlerProductsGroup(c *gin.Context) {
 		log.Println("Connection Failed to Open", err)
 	}
 	defer db.Close()
-	log.Println("Connection Established")
 	var products []Product
 	db.Where("category = ?", c.Param("category")).Find(&products)
 	c.Header("Access-Control-Allow-Origin", "*")
@@ -75,7 +76,6 @@ func handlerProductId(c *gin.Context) {
 		log.Println("Connection Failed to Open", err)
 	}
 	defer db.Close()
-	log.Println("Connection Established")
 	var products []Product
 	db.Where("id = ?", c.Param("id")).First(&products)
 	c.Header("Access-Control-Allow-Origin", "*")
@@ -88,13 +88,24 @@ func handlerProductAdd(c *gin.Context) {
 		log.Println("Connection Failed to Open", err)
 	}
 	defer db.Close()
-	log.Println("Connection Established2")
 	var products Product
 	_ = c.ShouldBindJSON(&products)
-	log.Println(products)
 	db.Create(&products)
 	c.Header("Access-Control-Allow-Origin", "*")
 	c.JSON(200, "accept")
+}
+
+func handlerProductUpdate(c *gin.Context) {
+	db, err := gorm.Open("mysql", "root:qwe123@/shop?charset=utf8&")
+	if err != nil {
+		log.Println("Connection Failed to Open", err)
+	}
+	defer db.Close()
+	var products Product
+	_ = c.ShouldBindJSON(&products)
+	db.Model(&products).Where("id = ?", c.Param("id")).Update(&products)
+	c.Header("Access-Control-Allow-Origin", "*")
+	c.String(200, "accept")
 }
 
 func handlerProductDel(c *gin.Context) {
@@ -103,14 +114,25 @@ func handlerProductDel(c *gin.Context) {
 		log.Println("Connection Failed to Open", err)
 	}
 	defer db.Close()
-	log.Println(c.Param("id"))
 	db.Where("id = ?", c.Param("id")).Delete(Product{})
 	c.Header("Access-Control-Allow-Origin", "*")
 	c.String(200, "accept")
 }
 
-func handlerProductUpload(c *gin.Context) {
-	log.Println(c.FormFile("file"))
+func handlerImageUpload(c *gin.Context) {
+	file, err := c.FormFile("file")
+	if err != nil {
+		c.Header("Access-Control-Allow-Origin", "*")
+		c.String(500, "denied")
+		fmt.Println(err)
+	}
+	path := "./img/" + file.Filename
+	err = c.SaveUploadedFile(file, path)
+	if err != nil {
+		c.Header("Access-Control-Allow-Origin", "*")
+		c.String(500, "denied")
+		fmt.Println(err)
+	}
 	c.Header("Access-Control-Allow-Origin", "*")
-	c.String(200, "accept")
+	c.String(200, file.Filename)
 }
