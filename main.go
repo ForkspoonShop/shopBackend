@@ -6,6 +6,7 @@ import (
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/mysql"
 	"log"
+	"time"
 )
 
 type Product struct {
@@ -17,8 +18,10 @@ type Product struct {
 	Description string `db:"description"`
 }
 
+const baseLogin = "root:qwe123@/shop?charset=utf8&"
+
 func main() {
-	db, err := gorm.Open("mysql", "root:qwe123@/shop?charset=utf8&")
+	db, err := gorm.Open("mysql", baseLogin)
 	if err != nil {
 		log.Println("Connection Failed to Open", err)
 	}
@@ -47,8 +50,10 @@ func handlerOption(c *gin.Context) {
 }
 
 func handlerProductsAll(c *gin.Context) {
-	db, err := gorm.Open("mysql", "root:qwe123@/shop?charset=utf8&")
+	db, err := gorm.Open("mysql", baseLogin)
 	if err != nil {
+		c.Header("Access-Control-Allow-Origin", "*")
+		c.String(500, "failed to open database")
 		log.Println("Connection Failed to Open", err)
 	}
 	defer db.Close()
@@ -59,8 +64,10 @@ func handlerProductsAll(c *gin.Context) {
 }
 
 func handlerProductsGroup(c *gin.Context) {
-	db, err := gorm.Open("mysql", "root:qwe123@/shop?charset=utf8&")
+	db, err := gorm.Open("mysql", baseLogin)
 	if err != nil {
+		c.Header("Access-Control-Allow-Origin", "*")
+		c.String(500, "failed to open database")
 		log.Println("Connection Failed to Open", err)
 	}
 	defer db.Close()
@@ -71,8 +78,10 @@ func handlerProductsGroup(c *gin.Context) {
 }
 
 func handlerProductId(c *gin.Context) {
-	db, err := gorm.Open("mysql", "root:qwe123@/shop?charset=utf8&")
+	db, err := gorm.Open("mysql", baseLogin)
 	if err != nil {
+		c.Header("Access-Control-Allow-Origin", "*")
+		c.String(500, "failed to open database")
 		log.Println("Connection Failed to Open", err)
 	}
 	defer db.Close()
@@ -83,8 +92,10 @@ func handlerProductId(c *gin.Context) {
 }
 
 func handlerProductAdd(c *gin.Context) {
-	db, err := gorm.Open("mysql", "root:qwe123@/shop?charset=utf8&")
+	db, err := gorm.Open("mysql", baseLogin)
 	if err != nil {
+		c.Header("Access-Control-Allow-Origin", "*")
+		c.String(500, "failed to open database")
 		log.Println("Connection Failed to Open", err)
 	}
 	defer db.Close()
@@ -96,8 +107,10 @@ func handlerProductAdd(c *gin.Context) {
 }
 
 func handlerProductUpdate(c *gin.Context) {
-	db, err := gorm.Open("mysql", "root:qwe123@/shop?charset=utf8&")
+	db, err := gorm.Open("mysql", baseLogin)
 	if err != nil {
+		c.Header("Access-Control-Allow-Origin", "*")
+		c.String(500, "failed to open database")
 		log.Println("Connection Failed to Open", err)
 	}
 	defer db.Close()
@@ -109,8 +122,10 @@ func handlerProductUpdate(c *gin.Context) {
 }
 
 func handlerProductDel(c *gin.Context) {
-	db, err := gorm.Open("mysql", "root:qwe123@/shop?charset=utf8&")
+	db, err := gorm.Open("mysql", baseLogin)
 	if err != nil {
+		c.Header("Access-Control-Allow-Origin", "*")
+		c.String(500, "failed to open database")
 		log.Println("Connection Failed to Open", err)
 	}
 	defer db.Close()
@@ -123,16 +138,17 @@ func handlerImageUpload(c *gin.Context) {
 	file, err := c.FormFile("file")
 	if err != nil {
 		c.Header("Access-Control-Allow-Origin", "*")
-		c.String(500, "denied")
+		c.String(500, err.Error()+"qwe")
 		fmt.Println(err)
 	}
 	path := "./img/" + file.Filename
 	err = c.SaveUploadedFile(file, path)
 	if err != nil {
 		c.Header("Access-Control-Allow-Origin", "*")
-		c.String(500, "denied")
+		c.String(500, err.Error())
 		fmt.Println(err)
 	}
+	time.Sleep(time.Second)
 	c.Header("Access-Control-Allow-Origin", "*")
 	c.String(200, file.Filename)
 }
